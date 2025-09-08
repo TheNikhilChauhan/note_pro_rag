@@ -5,7 +5,7 @@ import { TextLoader } from "langchain/document_loaders/fs/text";
 import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 import { YoutubeTranscript } from "youtube-transcript";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { ensureCollection } from "./qdrant";
+import { ensureCollection, getQdrantClient } from "./qdrant";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { promises as fs } from "node:fs";
 
@@ -56,9 +56,9 @@ export class DocumentIndex {
     await ensureCollection(dimension);
 
     //add to qdrant
-    await QdrantVectorStore.fromDocuments(docs, embedding, {
-      url: process.env.QDRANT_URL!,
-      apiKey: process.env.QDRANT_API_KEY,
+    const qdrant = await getQdrantClient();
+    const vectorStore = await QdrantVectorStore.fromDocuments(docs, embedding, {
+      client: qdrant,
       collectionName: process.env.QDRANT_COLLECTION,
     });
 
@@ -67,7 +67,7 @@ export class DocumentIndex {
       await fs.unlink(this.filePath).catch(() => {});
     }
 
-    return docs.length;
+    return vectorStore;
   }
 
   //loader dispatcher

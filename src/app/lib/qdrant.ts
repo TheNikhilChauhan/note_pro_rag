@@ -11,18 +11,26 @@ const QDRANT_URL = process.env.QDRANT_URL!;
 const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
 export const QDRANT_COLLECTION = process.env.QDRANT_COLLECTION || "rag_chunks";
 
-// init client
-export const qdrantClient = new QdrantClient({
-  url: QDRANT_URL,
-  apiKey: QDRANT_API_KEY || undefined,
-  // skips version check (avoids annoying startup errors in dev)
-  checkCompatibility: process.env.QDRANT_SKIP_COMPATIBILITY_CHECK === "true",
-});
+let qdrantClient: QdrantClient | null = null;
+// init client and we can reuse also
+export async function getQdrantClient() {
+  if (!qdrantClient) {
+    if (!QDRANT_URL) {
+      throw new Error("Qdrant url is missing in env variables");
+    }
+    qdrantClient = new QdrantClient({
+      url: QDRANT_URL,
+      apiKey: QDRANT_API_KEY,
+    });
+  }
+  return qdrantClient;
+}
 
 /**
- * Ensure a collection exists with the right vector dimension
+  Ensure a collection exists with the right vector dimension
  */
 export async function ensureCollection(dimension: number) {
+  const qdrantClient = await getQdrantClient();
   try {
     const existing = await qdrantClient.getCollection(QDRANT_COLLECTION);
     const currentDim =
@@ -49,9 +57,9 @@ export async function ensureCollection(dimension: number) {
 /**
   get vector store instance
  */
-export function getVectorStore(
+export async function getVectorStore(
   embeddings?: EmbeddingsInterface
-): QdrantVectorStore {
+): Promise<QdrantVectorStore> {
   const embedder =
     embeddings ||
     new OpenAIEmbeddings({
@@ -59,8 +67,9 @@ export function getVectorStore(
       model: process.env.OPENAI_EMBEDDING_MODEL || "text-embedding-3-large",
     });
 
+  const client = await getQdrantClient();
   return new QdrantVectorStore(embedder, {
-    client: qdrantClient,
+    client,
     collectionName: QDRANT_COLLECTION,
   });
 }

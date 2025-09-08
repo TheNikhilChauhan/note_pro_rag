@@ -3,6 +3,8 @@ import { QdrantClient } from "@qdrant/js-client-rest";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import type { EmbeddingsInterface } from "@langchain/core/embeddings";
+import dotenv from "dotenv";
+dotenv.config();
 
 // env vars
 const QDRANT_URL = process.env.QDRANT_URL!;
@@ -45,7 +47,7 @@ export async function ensureCollection(dimension: number) {
 }
 
 /**
- * Factory: get vector store instance
+  get vector store instance
  */
 export function getVectorStore(
   embeddings?: EmbeddingsInterface

@@ -19,7 +19,7 @@ export async function getRetriever(k = 4) {
 }
 
 //retireve relevant chunks from qdrant
-export async function retireveDocs(query: string, k = 4) {
+export async function retrieveDocs(query: string, k = 4) {
   if (!query || typeof query !== "string") {
     throw new Error(" Query must be a non-empty string");
   }

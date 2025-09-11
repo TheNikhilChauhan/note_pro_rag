@@ -8,6 +8,7 @@ import { OpenAIEmbeddings } from "@langchain/openai";
 import { ensureCollection, getQdrantClient } from "./qdrant";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { promises as fs } from "node:fs";
+import { getYoutubeTranscript } from "./youtube";
 
 interface IndexingProps {
   apiKey: string;
@@ -85,14 +86,12 @@ export class DocumentIndex {
 
     //youtube-transcript
     if (this.youtubeUrl) {
-      const transcript = await YoutubeTranscript.fetchTranscript(
-        this.youtubeUrl
-      );
-      const text = transcript.map((t) => t.text).join(" ");
+      const transcript = await getYoutubeTranscript(this.youtubeUrl);
+      if (!transcript) throw new Error("No transcript found for YouTube video");
+
       return [
         new Document({
-          pageContent: text,
-          metadata: { source: this.youtubeUrl },
+          pageContent: transcript,
         }),
       ];
     }

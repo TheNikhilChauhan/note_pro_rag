@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
     let filePath: string | undefined;
     let fileType: string | undefined;
     let textContent = "";
+    let indexer: DocumentIndex;
 
     //upload file
     if (file) {
@@ -29,21 +30,15 @@ export async function POST(req: NextRequest) {
       await fs.writeFile(filePath, buf);
 
       //create indexer
-      const indexer = new DocumentIndex({
+      indexer = new DocumentIndex({
         apiKey,
         filePath,
         fileType,
       });
-
-      await indexer.run();
-
-      return NextResponse.json({
-        message: "File indexed successfully",
-      });
     }
 
     // crawl website
-    if (url) {
+    else if (url) {
       const pages = await crawlWebsite(url, 50);
       if (!pages.length) {
         return NextResponse.json({ error: "No Pages found" }, { status: 404 });
@@ -53,17 +48,14 @@ export async function POST(req: NextRequest) {
         .map((page) => `Url: ${page.url}\n\n${page.text}`)
         .join("\n\n---\n\n");
 
-      const indexer = new DocumentIndex({
+      indexer = new DocumentIndex({
         apiKey: apiKey ?? process.env.OPENAI_API_KEY!,
         textContent,
       });
-
-      await indexer.run();
-      return NextResponse.json({ message: "Website indexed successfully" });
     }
 
     //Youtube transcript
-    if (youtubeUrl) {
+    else if (youtubeUrl) {
       const transcript = await getYoutubeTranscript(youtubeUrl);
 
       if (!transcript) {
@@ -73,21 +65,22 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const indexer = new DocumentIndex({
+      indexer = new DocumentIndex({
         apiKey: apiKey ?? process.env.OPENAI_API_KEY!,
         textContent: transcript,
       });
-
-      await indexer.run();
-      return NextResponse.json({
-        message: "Youtube transcript indexed",
-      });
+    } else {
+      return NextResponse.json(
+        { error: "No valid input provided" },
+        { status: 400 }
+      );
     }
+    await indexer.run();
 
-    return NextResponse.json(
-      { error: "No valid input provided" },
-      { status: 400 }
-    );
+    return NextResponse.json({
+      ok: true,
+      source: file?.name || url || youtubeUrl,
+    });
   } catch (error: any) {
     console.error("Indexing failed: ", error);
     return NextResponse.json(

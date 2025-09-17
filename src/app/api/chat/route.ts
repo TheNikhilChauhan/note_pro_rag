@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       question: query,
     });
 
-    const model = getChatModel(apiKey);
+    const model = getChatModel();
 
     //streams
     const stream = await model.stream(prompt);

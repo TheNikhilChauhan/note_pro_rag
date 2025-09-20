@@ -11,7 +11,7 @@ import { promises as fs } from "node:fs";
 import { getYoutubeTranscript } from "./youtube";
 
 interface IndexingProps {
-  apiKey: string;
+  apiKey?: string;
   filePath?: string;
   fileType?: string;
   textContent?: string;
@@ -20,7 +20,7 @@ interface IndexingProps {
 }
 
 export class DocumentIndex {
-  private apiKey: string;
+  private apiKey?: string;
   private filePath?: string;
   private fileType?: string;
   private textContent?: string;

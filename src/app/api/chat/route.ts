@@ -5,7 +5,7 @@ import { getChatModel } from "../../lib/llm";
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, apiKey } = await req.json();
+    const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: "Invalid messages" }, { status: 400 });

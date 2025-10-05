@@ -4,9 +4,9 @@ import { YoutubeTranscript } from "youtube-transcript";
 
 export async function POST(req: NextRequest) {
   try {
-    const { url } = await req.json();
+    const { url, apiKey } = await req.json();
 
-    if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) {
+    if (!url || !url.includes("youtube.com") || !url.includes("youtu.be")) {
       return NextResponse.json(
         { error: "Invalid Youtube Url" },
         { status: 400 }
@@ -14,20 +14,30 @@ export async function POST(req: NextRequest) {
     }
 
     const transcript = await YoutubeTranscript.fetchTranscript(url);
+
     if (!transcript || transcript.length === 0) {
       return NextResponse.json(
         { error: "Transcript not available" },
         { status: 400 }
       );
     }
-    const textContent = transcript.map((t) => t.text).join(" ");
+    const textContent = transcript
+      .map((t) => t.text)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
 
     const indexer = new DocumentIndex({
+      apiKey: apiKey || process.env.OPENAI_API_KEY!,
       textContent,
     });
     await indexer.run();
 
-    return NextResponse.json({ message: "Youtube transcript indexed" });
+    return NextResponse.json({
+      message: "Youtube transcript indexed",
+      success: true,
+      tokens: textContent.length,
+    });
   } catch (error: any) {
     console.error("Youtube API error: ", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

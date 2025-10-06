@@ -9,6 +9,7 @@ import { ensureCollection, getQdrantClient } from "./qdrant";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { promises as fs } from "node:fs";
 import { getYoutubeTranscript } from "./youtube";
+import { Document as LangchainDocument } from "@langchain/core/documents";
 
 interface IndexingProps {
   apiKey: string;
@@ -67,5 +68,20 @@ export class DocumentIndex {
       default:
         throw new Error(`Unsupported file type: ${this.fileType}`);
     }
+  }
+
+  public async runFromText(text: string) {
+    const doc = [new LangchainDocument({ pageContent: text })];
+
+    const embeddings = new OpenAIEmbeddings({
+      apiKey: this.apiKey,
+      model: "text-embedding-3-large",
+    });
+
+    const qdrant = await getQdrantClient();
+    await QdrantVectorStore.fromDocuments(doc, embeddings, {
+      client: qdrant,
+      collectionName: process.env.QDRANT_COLLECTION,
+    });
   }
 }

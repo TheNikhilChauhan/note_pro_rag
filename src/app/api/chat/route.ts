@@ -35,23 +35,28 @@ export async function POST(req: NextRequest) {
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       async start(controller) {
-        for await (const chunk of stream) {
-          const content =
-            typeof chunk?.content === "string" ? chunk.content : "";
+        try {
+          for await (const chunk of stream) {
+            const content =
+              typeof chunk?.content === "string" ? chunk.content : "";
 
-          if (content) {
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ content })}\n\n`)
-            );
+            if (content) {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ content })}\n\n`)
+              );
+            }
           }
+        } catch (error) {
+          console.error("Streaming error: ", error);
+        } finally {
+          controller.close();
         }
-        controller.close();
       },
     });
 
     return new Response(readable, {
       headers: {
-        "Content-Type": "text/event-stream",
+        "Content-Type": "text/event-stream; charset=utf-8",
         Connection: "keep-alive",
       },
     });

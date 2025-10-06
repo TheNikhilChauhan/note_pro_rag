@@ -11,36 +11,20 @@ import { promises as fs } from "node:fs";
 import { getYoutubeTranscript } from "./youtube";
 
 interface IndexingProps {
-  apiKey?: string;
-  filePath?: string;
-  fileType?: string;
-  textContent?: string;
-  url?: string;
-  youtubeUrl?: string;
+  apiKey: string;
+  fileType: string;
+  fileUrl: string;
 }
 
 export class DocumentIndex {
-  private apiKey?: string;
-  private filePath?: string;
-  private fileType?: string;
-  private textContent?: string;
-  private url?: string;
-  private youtubeUrl?: string;
+  private apiKey: string;
+  private fileType: string;
+  private fileUrl: string;
 
-  constructor({
-    apiKey,
-    filePath,
-    fileType,
-    textContent,
-    url,
-    youtubeUrl,
-  }: IndexingProps) {
+  constructor({ apiKey, fileUrl, fileType }: IndexingProps) {
     this.apiKey = apiKey;
-    this.filePath = filePath;
+    this.fileUrl = fileUrl;
     this.fileType = fileType;
-    this.textContent = textContent;
-    this.url = url;
-    this.youtubeUrl = youtubeUrl;
   }
 
   //main entry
@@ -62,54 +46,24 @@ export class DocumentIndex {
       client: qdrant,
       collectionName: process.env.QDRANT_COLLECTION,
     });
-
-    //Cleanup process of uploaded file
-    if (this.filePath) {
-      await fs.unlink(this.filePath).catch(() => {});
-    }
-
-    return vectorStore;
   }
 
   //loader dispatcher
   private async loadDocument(): Promise<Document[]> {
-    //text
-    if (this.textContent) {
-      return [new Document({ pageContent: this.textContent })];
-    }
+    //download file locally from cloudinary url
+    const res = await fetch(this.fileUrl);
+    if (!res.ok) throw new Error("Failed to fetch file");
 
-    //website
-    if (this.url) {
-      const loader = new CheerioWebBaseLoader(this.url);
-      return await loader.load();
-    }
-
-    //youtube-transcript
-    if (this.youtubeUrl) {
-      const transcript = await getYoutubeTranscript(this.youtubeUrl);
-      if (!transcript) throw new Error("No transcript found for YouTube video");
-
-      return [
-        new Document({
-          pageContent: transcript,
-        }),
-      ];
-    }
-
-    if (!this.filePath || !this.fileType) {
-      throw new Error(
-        "Please provide either textContent, url, youtube-url, or file-path/type"
-      );
-    }
+    const buffer = Buffer.from(await res.arrayBuffer());
 
     switch (this.fileType) {
       case "application/pdf":
-        return await new PDFLoader(this.filePath).load();
+        return await new PDFLoader(new Blob([buffer])).load();
       case "text/csv":
-        return await new CSVLoader(this.filePath).load();
-      case "text/plain":
-      case "application/rtf":
-        return await new TextLoader(this.filePath).load();
+        return await new CSVLoader(new Blob([buffer])).load();
+
+      case "application/plain":
+        return await new TextLoader(new Blob([buffer])).load();
       default:
         throw new Error(`Unsupported file type: ${this.fileType}`);
     }

@@ -4,11 +4,11 @@ import { YoutubeTranscript } from "youtube-transcript";
 
 export async function POST(req: NextRequest) {
   try {
-    const { url, apiKey } = await req.json();
+    const { url } = await req.json();
 
-    if (!url || !url.includes("youtube.com") || !url.includes("youtu.be")) {
+    if (!url) {
       return NextResponse.json(
-        { error: "Invalid Youtube Url" },
+        { error: "Missing Youtube Url" },
         { status: 400 }
       );
     }
@@ -21,22 +21,17 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const textContent = transcript
-      .map((t) => t.text)
-      .join(" ")
-      .replace(/\s+/g, " ")
-      .trim();
+    const textContent = transcript.map((t) => t.text).join(" ");
 
     const indexer = new DocumentIndex({
-      apiKey: apiKey || process.env.OPENAI_API_KEY!,
-      textContent,
+      apiKey: process.env.OPENAI_API_KEY!,
+      fileUrl: "",
+      fileType: "text/plain",
     });
-    await indexer.run();
+    await indexer.runFromText(textContent);
 
     return NextResponse.json({
       message: "Youtube transcript indexed",
-      success: true,
-      tokens: textContent.length,
     });
   } catch (error: any) {
     console.error("Youtube API error: ", error);

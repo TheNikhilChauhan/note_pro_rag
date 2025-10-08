@@ -1,4 +1,4 @@
-import axios from "axios";
+import { YoutubeTranscript } from "youtube-transcript";
 
 export async function getYoutubeTranscript(
   videoUrl: string
@@ -14,15 +14,12 @@ export async function getYoutubeTranscript(
     }
     const videoId = videoIdMatch[1];
 
-    const res = await axios.get(
-      `https://yt.lemnoslife.com/videos?part=transcript&id=${videoId}`
-    );
+    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
 
-    const transcriptItems = res.data?.items?.[0]?.transcript?.transcriptParts;
-    if (!transcriptItems) return null;
+    if (!transcriptArray || transcriptArray.length === 0) return null;
 
     //convert transcript to single string
-    const transcriptText = transcriptItems.map((t: any) => t.text).join(" ");
+    const transcriptText = transcriptArray.map((t: any) => t.text).join(" ");
 
     return transcriptText.trim();
   } catch (error) {

@@ -1,19 +1,21 @@
 import { DocumentIndex } from "@/app/lib/indexing";
+import { getYoutubeTranscript } from "@/app/lib/youtube";
 import { NextRequest, NextResponse } from "next/server";
-import { YoutubeTranscript } from "youtube-transcript";
 
 export async function POST(req: NextRequest) {
   try {
-    const { url } = await req.json();
+    const { url, apiKey } = await req.json();
 
-    if (!url) {
+    if (!url || typeof url !== "string") {
       return NextResponse.json(
         { error: "Missing Youtube Url" },
         { status: 400 }
       );
     }
 
-    const transcript = await YoutubeTranscript.fetchTranscript(url);
+    //get transcript
+
+    const transcript = await getYoutubeTranscript(url);
 
     if (!transcript || transcript.length === 0) {
       return NextResponse.json(
@@ -21,14 +23,13 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const textContent = transcript.map((t) => t.text).join(" ");
 
     const indexer = new DocumentIndex({
-      apiKey: process.env.OPENAI_API_KEY!,
-      fileUrl: "",
-      fileType: "text/plain",
+      apiKey,
+      textContent: transcript,
+      source: `youtube:${videoId}`,
     });
-    await indexer.runFromText(textContent);
+    await indexer.run();
 
     return NextResponse.json({
       message: "Youtube transcript indexed",

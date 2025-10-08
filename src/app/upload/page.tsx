@@ -1,19 +1,24 @@
 "use client";
 
+import { useUser } from "@clerk/clerk-react";
 import { useState } from "react";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const { user } = useUser();
   const [message, setMessage] = useState("");
 
   const handleUpload = async () => {
-    if (!file) return alert("Please select a file");
-
-    setLoading(true);
-    setMessage("");
+    if (!file) {
+      setMessage("Please select a file first.");
+      return;
+    }
 
     try {
+      setLoading(true);
+      setMessage("");
+
       //upload to cloudinary
       const formData = new FormData();
       formData.append("file", file);

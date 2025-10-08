@@ -2,21 +2,18 @@
 
 import { useState } from "react";
 
-export default function YouTubeUploader({
-  onIndexed,
-}: {
-  onIndexed?: () => void;
-}) {
+interface Props {
+  onContentIndexed: (message: string) => void;
+}
+
+export default function YouTubeUploader({ onContentIndexed }: Props) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!url) return;
 
     setLoading(true);
-    setMessage("");
 
     try {
       const res = await fetch("/api/youtube", {
@@ -28,38 +25,38 @@ export default function YouTubeUploader({
       });
 
       const data = await res.json();
+
       if (!res.ok) throw new Error(data.error || "Indexing failed");
 
-      setMessage("Youtube video indexed successfully");
-      setUrl("");
+      if (data.videoId) {
+        onContentIndexed(`Video indexed successfully: ${data.videoId}`);
+      } else {
+        onContentIndexed(`Failed: ${data.error}`);
+      }
     } catch (error: any) {
-      setMessage(`${error.message}`);
+      onContentIndexed(`${error.message}`);
     } finally {
       setLoading(false);
+      setUrl("");
     }
   };
 
   return (
     <div className="p-4 border rounded-2xl shadow bg-gray-600">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <label className="font-medium">Youtube Video URL</label>
-        <input
-          type="url"
-          placeholder="Enter youtube video link..."
-          value={url}
-          className="p-2 border rounded-lg"
-          onChange={(e) => setUrl(e.target.value)}
-          required
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
-        >
-          {loading ? "Uploading..." : "Upload"}
-        </button>
-      </form>
-      {message && <p className="mt-2 text-sm">{message}</p>}
+      <input
+        type="url"
+        placeholder="Enter youtube video link..."
+        value={url}
+        className="p-2 border rounded-lg w-full"
+        onChange={(e) => setUrl(e.target.value)}
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
+      >
+        {loading ? "Uploading..." : "Upload"}
+      </button>
     </div>
   );
 }

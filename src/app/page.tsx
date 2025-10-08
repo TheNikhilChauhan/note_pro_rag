@@ -1,32 +1,25 @@
-import ChatBox from "@/components/ChatBox";
-import Uploader from "@/components/Uploader";
-import WebsiteUploader from "@/components/WebsiteUploader";
-import YouTubeUploader from "@/components/YouTubeUploader";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="text-center space-y-8">
-      <h1 className="text-4xl font-extrabold text-gray-500">
-        Chat with Your Data
-      </h1>
-      <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-        Upload files, crawl websites, or analyze YouTube transcripts. Ask
-        questions and get instant AI-powered answers.
+    <div className="flex flex-col min-h-screen items-center justify-center text-center py-20 px-6">
+      <h2 className="text-4xl font-bold mb-4">Your AI Research Assistant</h2>
+      <p className="text-lg text-gray-300 mb-6 max-w-xl">
+        Upload PDFs, scrape websites, analyze Youtube transcripts, and chat with
+        all your knowledge in one place.
       </p>
-
-      <div className="flex justify-center gap-4">
-        <Link
-          href="/upload"
-          className="px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Upload Files
-        </Link>
+      <div className="flex space-x-4 font-semibold">
         <Link
           href="/chat"
-          className="px-6 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700"
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           Start Chatting
+        </Link>
+        <Link
+          href="/upload"
+          className="px-6 py-3 text-blue-600 rounded-lg hover:bg-blue-50 border border-blue-600"
+        >
+          Upload Docs
         </Link>
       </div>
     </div>

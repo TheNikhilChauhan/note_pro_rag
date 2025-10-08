@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider signInFallbackRedirectUrl={"/"}>
       <html lang="en">
         <body className="flex flex-col min-h-screen">
           <Header />

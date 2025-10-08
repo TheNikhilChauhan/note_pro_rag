@@ -17,22 +17,17 @@ export async function POST(req: NextRequest) {
     const url = form.get("url") as string | null;
     const youtubeUrl = form.get("youtubeUrl") as string | null;
 
-    let filePath: string | undefined;
+    let fileUrl: string | undefined;
     let fileType: string | undefined;
     let textContent = "";
     let indexer: DocumentIndex;
 
     //upload file
-    if (file) {
-      const buf = Buffer.from(await file.arrayBuffer());
-      filePath = join(process.cwd(), "tmp", `${Date.now()}-${file.name}`);
-      fileType = file.type;
-      await fs.writeFile(filePath, buf);
-
+    if (fileUrl && fileType) {
       //create indexer
       indexer = new DocumentIndex({
         apiKey,
-        filePath,
+        fileUrl,
         fileType,
       });
     }

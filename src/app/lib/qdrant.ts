@@ -9,9 +9,10 @@ dotenv.config();
 // env vars
 const QDRANT_URL = process.env.QDRANT_URL!;
 const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
-export const QDRANT_COLLECTION = process.env.QDRANT_COLLECTION || "rag_chunks";
+export const QDRANT_COLLECTION = process.env.QDRANT_COLLECTION || "RAG_chunks";
 
 let qdrantClient: QdrantClient | null = null;
+
 // init client and we can reuse also
 export async function getQdrantClient() {
   if (!qdrantClient) {
@@ -33,9 +34,7 @@ export async function ensureCollection(dimension: number) {
   const qdrantClient = await getQdrantClient();
   try {
     const existing = await qdrantClient.getCollection(QDRANT_COLLECTION);
-    const currentDim =
-      existing.config?.params?.vectors?.size ||
-      existing.status?.optimizers_status?.default_segment_number;
+    const currentDim = existing.config?.params?.vectors?.size ?? null;
 
     if (currentDim && currentDim !== dimension) {
       console.warn(
@@ -64,10 +63,11 @@ export async function getVectorStore(
     embeddings ||
     new OpenAIEmbeddings({
       apiKey: process.env.OPENAI_API_KEY!,
-      model: process.env.OPENAI_EMBEDDING_MODEL || "text-embedding-3-large",
+      model: process.env.OPENAI_EMBED_MODEL || "text-embedding-3-large",
     });
 
   const client = await getQdrantClient();
+
   return new QdrantVectorStore(embedder, {
     client,
     collectionName: QDRANT_COLLECTION,

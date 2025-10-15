@@ -19,13 +19,31 @@ export async function POST(req: NextRequest) {
 
     //  Retrieve relevant docs from Qdrant
     const docs = await retrieveDocs(query);
-    const context = docs.map((d) => d.pageContent).join("\n\n");
+    console.log("🔍 Retrieved docs:", docs?.length);
+
+    if (!docs || docs.length === 0) {
+      return NextResponse.json({ error: "No relevant context found" });
+    }
+
+    const context = docs
+      .map((d, i) => {
+        const meta = d.metadata || {};
+        const sourceType = meta.sourceType || "unknown";
+        const sourceName = meta.sourceName?.split("/").pop() || "unknown";
+        const page = meta.pageNumber ? `Page ${meta.pageNumber}` : "";
+        const label = `${sourceName} ${page}`.trim();
+        return `Source ${i + 1} [${sourceType} - ${label}]: \n ${
+          d.pageContent
+        }`;
+      })
+      .join("\n\n");
 
     //  Build system prompt
-    const prompt = await getChatPrompt().format({
+    const prompt = await getChatPrompt().formatMessages({
       context,
       question: query,
     });
+    console.log("Final prompt: ", prompt);
 
     const model = getChatModel();
 
@@ -46,6 +64,19 @@ export async function POST(req: NextRequest) {
               );
             }
           }
+
+          //send source once stream ends
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                sources: docs.map((d) => ({
+                  sourceType: d.metadata.sourceType,
+                  sourceName: d.metadata.sourceName,
+                  pageNumber: d.metadata.pageNumber,
+                })),
+              })}\n\n`
+            )
+          );
         } catch (error) {
           console.error("Streaming error: ", error);
         } finally {

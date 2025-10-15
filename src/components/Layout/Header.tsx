@@ -17,22 +17,6 @@ export default function Header() {
           AI Mind
         </Link>
 
-        {/* Navigation */}
-        <nav className="flex space-x-6 font-semibold">
-          <Link href="/upload" className="hover:text-blue-600 hover:text-lg">
-            Upload
-          </Link>
-          <Link href="/crawl" className="hover:text-blue-600 hover:text-lg">
-            Crawl Website
-          </Link>
-          <Link href="/youtube" className="hover:text-blue-600 hover:text-lg">
-            Youtube
-          </Link>
-          <Link href="/chat" className="hover:text-blue-600 hover:text-lg">
-            Chat
-          </Link>
-        </nav>
-
         {/* Auth */}
         <div>
           <SignedIn>

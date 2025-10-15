@@ -2,37 +2,48 @@
 
 import { useState } from "react";
 
-export default function WebsiteUploader({
-  onIndexed,
-}: {
-  onIndexed?: () => void;
-}) {
+interface Props {
+  onContentIndexed?: (msg: string) => void;
+}
+
+export default function WebsiteUploader({ onContentIndexed }: Props) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!url) return;
+  const handleSubmit = async () => {
+    if (!url.trim()) {
+      setStatus("Please enter a valid website URL");
+      return;
+    }
 
     setLoading(true);
-    setMessage("");
+    setStatus("");
 
     try {
+      const formData = new FormData();
+      formData.append("url", url);
+
       const res = await fetch("/api/crawl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: formData,
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Website indexing failed");
 
-      setMessage("Website indexed successfully");
-      setUrl("");
-      onIndexed?.();
+      if (res.ok) {
+        const successMsg = `Indexed website: ${data.source || url}`;
+        setStatus(successMsg);
+        onContentIndexed?.(successMsg);
+      } else {
+        const errorMsg = `${data.error || "Failed to index website"}`;
+        setStatus(errorMsg);
+        onContentIndexed?.(errorMsg);
+      }
     } catch (error: any) {
-      setMessage(`${error.message}`);
+      setStatus(`${error.message}`);
+      onContentIndexed?.("Website indexing failed");
     } finally {
       setLoading(false);
     }
@@ -40,25 +51,22 @@ export default function WebsiteUploader({
 
   return (
     <div className="p-4 border rounded-2xl shadow bg-gray-600">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <label className="font-medium">Website URL</label>
-        <input
-          type="url"
-          placeholder="Enter website link..."
-          value={url}
-          required
-          onChange={(e) => setUrl(e.target.value)}
-          className="p-2 border rounded-lg"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 oy-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-        >
-          {loading ? "Uploading..." : "Upload"}
-        </button>
-      </form>
-      {message && <p className="mt-2 text-sm">{message}</p>}
+      <input
+        type="url"
+        placeholder="Enter website link..."
+        value={url}
+        required
+        onChange={(e) => setUrl(e.target.value)}
+        className="p-2 border rounded-lg"
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="px-4 oy-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+      >
+        {loading ? "Uploading..." : "Upload"}
+      </button>
+      {status && <p>{status}</p>}
     </div>
   );
 }

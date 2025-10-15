@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Dashboard from "./dashboard/page";
 
 export default function Home() {
   return (
@@ -16,7 +17,7 @@ export default function Home() {
           Start Chatting
         </Link>
         <Link
-          href="/upload"
+          href="/dashboard"
           className="px-6 py-3 text-blue-600 rounded-lg hover:bg-blue-50 border border-blue-600"
         >
           Upload Docs

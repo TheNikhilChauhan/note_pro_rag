@@ -1,6 +1,6 @@
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
-import { getQdrantClient } from "./qdrant";
+import { getQdrantClient, QDRANT_COLLECTION } from "./qdrant";
 
 export async function getRetriever(k = 4) {
   const qdrant = await getQdrantClient();
@@ -12,7 +12,7 @@ export async function getRetriever(k = 4) {
 
   const vectorStore = new QdrantVectorStore(embeddings, {
     client: qdrant,
-    collectionName: process.env.QDRANT_COLLECTION,
+    collectionName: QDRANT_COLLECTION,
   });
 
   return vectorStore.asRetriever({ k });

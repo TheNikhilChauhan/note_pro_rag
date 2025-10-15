@@ -42,7 +42,7 @@ export default function YouTubeUploader({ onContentIndexed }: Props) {
   };
 
   return (
-    <div className="p-4 border rounded-2xl shadow bg-gray-600">
+    <div className="p-4 border rounded-2xl shadow bg-gray-500">
       <input
         type="url"
         placeholder="Enter youtube video link..."

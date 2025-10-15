@@ -58,10 +58,12 @@ export async function POST(req: NextRequest) {
             const content =
               typeof chunk?.content === "string" ? chunk.content : "";
 
-            if (content) {
+            const words = content.split(/(\s+)/);
+            for (const word of words) {
               controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ content })}\n\n`)
+                encoder.encode(`data: ${JSON.stringify({ content: word })}\n\n`)
               );
+              await new Promise((r) => setTimeout(r, 15));
             }
           }
 

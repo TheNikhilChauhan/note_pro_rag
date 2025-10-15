@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>(
@@ -8,8 +8,18 @@ export default function ChatPage() {
   );
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
+  const latestMessageRef = useRef(messages);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = async () => {
+  useEffect(() => {
+    latestMessageRef.current = messages;
+    chatContainerRef.current?.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
+
+  const sendMessage = () => {
     if (!input.trim()) return;
 
     const newMessages = [...messages, { role: "user", content: input }];
@@ -17,11 +27,15 @@ export default function ChatPage() {
     setInput("");
     setLoading(true);
 
+    streamReply(newMessages);
+  };
+
+  const streamReply = async (currentMessages: typeof messages) => {
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: currentMessages }),
       });
 
       if (!res.body) throw new Error("No response body");
@@ -66,8 +80,8 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error(error);
-      setMessages([
-        ...newMessages,
+      setMessages((prev) => [
+        ...prev,
         { role: "assistant", content: "Error fetching reply" },
       ]);
     } finally {
@@ -76,16 +90,15 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-center my-4">AI Mind Chat </h1>
-      <div className="flex-1 overflow-y-auto p-4 border rounded bg-gray-300 space-y-3">
+    <div className="flex flex-col h-screen max-w-3xl mx-auto bg-gray-600">
+      <div className="flex-1 overflow-y-auto p-4 border rounded bg-gray-600 space-y-3">
         {messages.map((m, i) => (
           <div
             key={i}
             className={`p-3 rounded-lg max-w-[80%] ${
               m.role === "user"
                 ? "ml-auto bg-blue-500 text-white"
-                : "mr-auto bg-gray-200 text-black"
+                : "mr-auto bg-gray-300 text-black"
             } `}
           >
             {m.content}

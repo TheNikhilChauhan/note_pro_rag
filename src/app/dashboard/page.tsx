@@ -13,7 +13,7 @@ export default function Dashboard() {
   const handleLog = (msg: string) => setMessages((prev) => [...prev, msg]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-600">
       <header className="bg-red-600 text-white p-4 text-xl font-bold">
         AI Mind Dashboard
       </header>
@@ -24,7 +24,7 @@ export default function Dashboard() {
           <YouTubeUploader onContentIndexed={handleLog} />
         </section>
 
-        <section className="bg-white p-4 rounded shadow">
+        <section className="bg-gray-500 p-4 rounded shadow">
           <h2 className="font-semibold mb-2">Activity Log</h2>
           <div className="h-40 overflow-y-auto border p-2 rounded">
             {messages.length ? (
@@ -34,12 +34,12 @@ export default function Dashboard() {
                 </div>
               ))
             ) : (
-              <div className="text-gray-400 text-sm">No activity yet.</div>
+              <div className="text-gray-300 text-sm">No activity yet.</div>
             )}
           </div>
         </section>
 
-        <section className="bg-white p-4 rounded shadow">
+        <section className="bg-gray-500 p-4 rounded shadow">
           <ChatInterface />
         </section>
       </main>

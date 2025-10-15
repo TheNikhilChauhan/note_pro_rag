@@ -20,6 +20,22 @@ export function getChatPrompt() {
       - Use bullet points when listing things.
       - Use short paragraphs for clarity.
       - If context is too long, summarize the most relevant portion.
+      Always use the given context if available. If the answer is not in the context, politely say you don't know instead of making things up.
+
+      - Use **clear paragraphs** with proper spacing. Each idea should start in a new paragraph to make the text easy to read.
+
+      - If the answer includes **lists**, use bullet points or numbered lists for clarity.
+
+      - If the answer includes **code**, format it properly inside code blocks using triple backticks. Include:
+        - Language identifier (e.g., \`\`\`javascript)
+        - Proper indentation
+        - No extra unnecessary comments unless it helps understanding.
+
+      - Keep the answer concise but complete, highlighting important details first.
+
+      - Always make the output **visually pleasant** with spacing and structure suitable for reading in a chat interface.
+
+
 
       📚 Source Mentions:
       - When referring to facts or data, mention the source name and, if available,

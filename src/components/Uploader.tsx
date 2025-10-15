@@ -39,7 +39,7 @@ export default function Uploader({ onContentIndexed }: Props) {
   };
 
   return (
-    <div className="p-4 bg-white rounded-2xl shadow-xl space-y-6">
+    <div className="p-4 bg-gray-500 rounded-2xl shadow-xl space-y-6">
       <input
         type="file"
         accept=".pdf, .txt, .csv"
